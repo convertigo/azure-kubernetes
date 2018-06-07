@@ -1,0 +1,146 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: couchdb-deployment
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: couchdb
+    spec:
+      containers:
+      - name: couchdb
+        image: couchdb
+        volumeMounts:
+        - mountPath: "/opt/couchdb/data"
+          name: couchdb-volume
+        ports:
+        - containerPort: 5984
+          name: couchdb
+        env:
+        - name: COUCHDB_USER
+          value: "admin"
+        - name: COUCHDB_PASSWORD
+          value: "fullsyncpassword"
+      volumes:
+        - name: couchdb-volume
+          persistentVolumeClaim:
+            claimName: couchdb-volume-claim          
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: convertigo
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: convertigo
+    spec:
+      containers:
+      - name: convertigo
+        image: convertigo:latest
+        volumeMounts:
+        - mountPath: "/workspace"
+          name: c8o-workspace-volume
+        ports:
+        - containerPort: 28080
+        env:
+        - name: JAVA_OPTS
+          value: "-Dconvertigo.engine.fullsync.couch.username=admin
+                  -Dconvertigo.engine.fullsync.couch.password=fullsyncpassword
+                  -Dconvertigo.engine.fullsync.couch.url=http://c8o-couchdb:5984"
+      volumes:
+      - name: c8o-workspace-volume
+        persistentVolumeClaim:
+          claimName: c8o-volume-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: c8o-front
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 28080
+  selector:
+    app: convertigo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: c8o-couchdb
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 5984
+    targetPort: 5984
+  selector:
+    app: couchdb
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: c8o-volume-claim
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: c8o-volume-storage-class
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: couchdb-volume-claim
+  annotations:
+    volume.beta.kubernetes.io/storage-class: managed-premium
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: c8o-volume-storage-class
+provisioner: kubernetes.io/azure-file
+mountOptions:
+  - dir_mode=0777
+  - file_mode=0777
+  - uid=1000
+  - gid=1000
+parameters:
+  storageAccount: c8oworkspace
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: c8o-ingress
+  annotations:
+    kubernetes.io/ingress.class: addon-http-application-routing
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "route"
+    nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
+    nginx.ingress.kubernetes.io/proxy-body-size: 500m
+spec:
+  tls:
+  - hosts:
+    - demo-c8o.westeurope.cloudapp.azure.com
+    secretName: tls-secret
+  rules:
+  - host: demo-c8o.westeurope.cloudapp.azure.com
+    http:
+      paths:
+      - backend:
+          serviceName: c8o-front
+          servicePort: 80
+        path: /
