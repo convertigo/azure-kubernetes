@@ -23,6 +23,11 @@ This repo will help you deploy Convertigo on Azure AKS, the Kubernetes service.
 * Select the existing  Resource group named "MC_<your clustername>-resource-group_....." This is mandatory to have Convertigo Instances able to access this StorageAccount.
 * Click "Create" your Storage account will be created
   
+4. Deploy the YAML defintion to the kubernetes cluster
+* run kubectl apply -f c8o-kubernetes.yaml
+* run the Kubernetes dashboard (az aks browse --resource-group <your resource group> --name <your cluster name>)
+* Your Browser will open a new page with the dashboard.. 
+  
   
 
 
