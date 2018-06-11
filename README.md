@@ -27,6 +27,22 @@ This repo will help you deploy Convertigo on Azure AKS, the Kubernetes service.
 * run kubectl apply -f c8o-kubernetes.yaml
 * run the Kubernetes dashboard (az aks browse --resource-group <your resource group> --name <your cluster name>)
 * Your Browser will open a new page with the dashboard.. 
+
+# Notes:
+The YAML files declares a cluster with 3 Convertigo replicas and 1 fullSync CouchDB repository replica. You can change this for your own deployments.
+
+You might have to change the hosts definitions in the following section to match your DNS FDQN (here : demo-c8o.westeurope.cloudapp.azure.com)
+
+```
+spec:
+  tls:
+  - hosts:
+    - demo-c8o.westeurope.cloudapp.azure.com
+    secretName: example-tls
+  rules:
+  - host: demo-c8o.westeurope.cloudapp.azure.com
+```
+
   
   
 
