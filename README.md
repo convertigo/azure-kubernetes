@@ -16,12 +16,17 @@ This repo will help you deploy Convertigo on Azure AKS, the Kubernetes service.
 2. When ready, Click on the portal's "All resources", you will see a Whole Bunch of resources there.
 * Group the list by type and in the "Kubernetes Service" click on the cluster to open the cluster's properties.
 * Then click on the "View Kubernetes dashboard" and follow connection instructions. You will have to install Azure CLI to be able to open the dashboard.
-3. Convertigo runs as Multi instance Shared Workspace configuration, so it will need an AzureFile shared "StorageAccount" resource.
+3. Convertigo runs as Multi instance Shared Workspace configuration, so it will need an AzureFile shared "StorageAccount" resource to hold the shared workspace on a persistent disk. We use for that the Azure's SMB 3.0 shareable "StorageAccount" File resource.
 * Create a new "Storge account" resource: In the portal Click "Create a resource"->Storage->Storage Account
 * set the name explicitly to be "c8oworkspace". This is to match the name used by the provided Convertigo Kubernetes YAML deploy file
 * Select "ResourceManager"
 * Select the existing  Resource group named "MC_<your clustername>-resource-group_....." This is mandatory to have Convertigo Instances able to access this StorageAccount.
 * Click "Create" your Storage account will be created
+  
+4. Deploy the YAML defintion to the kubernetes cluster
+* run kubectl apply -f c8o-kubernetes.yaml
+* run the Kubernetes dashboard (az aks browse --resource-group <your resource group> --name <your cluster name>)
+* Your Browser will open a new page with the dashboard.. 
   
   
 
