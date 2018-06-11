@@ -124,9 +124,9 @@ kind: Ingress
 metadata:
   name: c8o-ingress
   annotations:
+    kubernetes.io/tls-acme: 'true'
     kubernetes.io/ingress.class: addon-http-application-routing
-    kubernetes.io/tls-acme: "true"
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    #nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/affinity: "cookie"
     nginx.ingress.kubernetes.io/session-cookie-name: "route"
     nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
@@ -135,12 +135,16 @@ spec:
   tls:
   - hosts:
     - demo-c8o.westeurope.cloudapp.azure.com
-    secretName: tls-secret
+    secretName: example-tls
   rules:
   - host: demo-c8o.westeurope.cloudapp.azure.com
     http:
       paths:
-      - backend:
+      - path: /convertigo
+        backend:
           serviceName: c8o-front
           servicePort: 80
-        path: /
+      - path: /.well-known/acme-challenge
+        backend:
+          serviceName: kube-lego-nginx
+          servicePort: 8080
