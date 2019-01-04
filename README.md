@@ -66,6 +66,21 @@ You can use this command to install a 6 instance CouchDB 2.3.0 cluster, each one
 helm install --name cdb-fullsync incubator/couchdb --set clusterSize=6 --set persistentVolume.enabled=true --set persistentVolume.size=1Gi --set image.tag=2.3.0 --set service.type=NodePort
 ```
 
+This cluster created will be loadbalanced by a __cdb-fullsync-svc-couchdb__ service. To use it you will have to confifigure in the FullSync Section of the Convertigo Configuration :
+
+```
+Couch DB URL for FullSync : http://cdb-fullsync-svc-couchdb:5984
+Couch DB username for FullSync: admin
+Couch DB password for FullSync: <admin password>
+```
+
+Where <admin password> can be found using the 
+	
+```
+kubectl get secret cdb-fullsync-couchdb -o go-template='{{ .data.adminPassword }}' | base64 --decode
+```
+
+Command.
 
 
 
