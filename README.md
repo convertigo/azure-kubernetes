@@ -58,7 +58,7 @@ spec:
   - host: demo-c8o.westeurope.cloudapp.azure.com
 ```
 # Using a CouchDB Cluster
-This sample YAML uses a single instance CouchDB. Instead, ff you want to use a Multi instance clustered CouchDB, you can install a CouchDB Cluster using an HELM chart. see https://github.com/helm/charts/tree/master/incubator/couchdb
+This sample YAML uses a single instance CouchDB. Instead, if you want to use a Multi instance clustered CouchDB, you can install a CouchDB Cluster using an HELM chart. see https://github.com/helm/charts/tree/master/incubator/couchdb
 
 For example, you can use this command to install a 6 instance CouchDB 2.3.0 cluster, each one using an an AzureDisk of 1Gb. The data will be replicated on all these instances so that if we loose a node, the cluster will still work. Also, as the requests to the CouchDB instances are load balanced using a NodePort, we will benefit from Parallel processing for CouchDB requests such as the _changes and the _bulk_get requests.
 
